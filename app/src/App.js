@@ -18,15 +18,11 @@ function App() {
     fetch(`/characters?currentPage=${currentPage}`,).then(
       response => response.json())
       .then((data) => [setTotalCharacters(data.data.total), filterSelected(data.data.results)])
+      .catch((e) => console.log("error", e))
 
-    setTimeout(() => {
+    // setTimeout(() => {
       setLoading(false);
-    }, 1000)
-    // .then(data => 
-    //   console.log("data", data)
-    //   // setCharacters(data)
-    // )
-
+    // }, 1000)
 
 
 
@@ -34,30 +30,41 @@ function App() {
 
 
 
-  const indexOfLastPost = currentPage * charactersPerPage;
-  const indexOfFirstPost = indexOfLastPost - charactersPerPage;
+  // const indexOfLastPost = currentPage * charactersPerPage;
+  // const indexOfFirstPost = indexOfLastPost - charactersPerPage;
   // const currentCharacters = characters.slice(indexOfFirstPost, indexOfLastPost);
 
 
   const paginate = pageNumber => setCurrentPage(pageNumber);
 
-  const addToSelectedCharacters = chacarterId => {
-    let index = characters.findIndex(x => x.id === chacarterId);
-    selectedCharacters.push(characters[index]);
-    characters.splice(index, 1);
-    setCharacters(characters);
-    setSelectedCharacters(selectedCharacters);
-    console.log("characters", characters)
-    console.log("selectedCharacters", selectedCharacters)
+  const addToSelectedCharacters = characterId => {
+
+    //pegar o elemento do array geral
+    let index = characters.findIndex(x => x.id === characterId);
+    // copiar o objeto para o array dos selecionados
+    let modifiedSelected = [...selectedCharacters, characters[index]];
+    setSelectedCharacters(modifiedSelected);
+
+    let modifiedCharacters = characters.filter(character => character.id !== characterId);
+    setCharacters(modifiedCharacters);
+
+    // modifiedSelected.push(characters[index]);
+
+    // console.log("modifiedSelected", modifiedSelected.length)
+    // console.log("characters", characters)
+    // const modifiedCharacters = characters.splice(index, 1);
+    // console.log("modifiedCharacters", modifiedCharacters)
+    // 
+    // console.log("selectedCharacters", selectedCharacters)
+    // const oldCharacters = characters;
   };
 
-  const removeFromSelectedCharacters = chacarterId => {
-    let index = selectedCharacters.findIndex(x => x.id === chacarterId);
-    selectedCharacters.splice(index, 1);
-    // setCharacters(characters);
-    setSelectedCharacters(selectedCharacters);
-    // console.log("characters", characters)
-    // console.log("selectedCharacters", selectedCharacters)
+  const removeFromSelectedCharacters = characterId => {
+    let index = selectedCharacters.findIndex(x => x.id === characterId);
+
+    let modifiedSelectedCharacters = selectedCharacters.filter(character => character.id !== characterId);
+    // selectedCharacters.splice(index, 1);
+    setSelectedCharacters(modifiedSelectedCharacters);
   };
 
   const filterSelected = newCharacters => {
@@ -65,11 +72,15 @@ function App() {
       let found = selectedCharacters.findIndex(x => x.id === newCharacters[i].id);
       if (found !== -1) {
         newCharacters.splice(i, 1);
-        i++;
+        console.log("dound", newCharacters)
+        // newCharacters.filter(character => character.id === selectedCharacters[found].id);
+        i--;
       }
     }
-    console.log("newCharacters", newCharacters)
-    // return newCharacters;
+    // let modifiedCharacters = characters.filter(character => character.id !== characterId);
+    // setCharacters(modifiedCharacters);
+
+    // console.log("newCharacters", newCharacters)
     setCharacters(newCharacters)
   }
 
@@ -94,11 +105,28 @@ function App() {
           </div>
           <div className="col-6">
             <h3 className="mb-3">Selected Characters</h3>
-            <Listing characters={selectedCharacters} listingType={"selected"}
-              removeFromSelectedCharacters={removeFromSelectedCharacters} loading={loading} />
+            <ul className='list-group mb-4'>
+              {selectedCharacters.map(characterSelected => (
+                <li key={characterSelected.id} className='list-group-item'>
+                  <div className="row">
+                    <div className="col-11">
+                      {characterSelected.name}
+                    </div>
+
+        
+                    <div onClick={() => removeFromSelectedCharacters(characterSelected.id)} className="col-1 page-link"
+                      style={{ color: "white", background: "red", borderRadius: "5px", cursor: "pointer" }}>-</div>
+
+                  </div>
+                </li>
+
+              ))}
+
+            </ul>
           </div>
         </div>
       </div>
+
     </div>
   );
 }
