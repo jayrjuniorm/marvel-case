@@ -35,7 +35,10 @@ function App() {
   // const currentCharacters = characters.slice(indexOfFirstPost, indexOfLastPost);
 
 
-  const paginate = pageNumber => setCurrentPage(pageNumber);
+  const paginate = pageNumber => {
+    window.scrollTo(0, 0)
+    setCurrentPage(pageNumber);
+  }
 
   const addToSelectedCharacters = characterId => {
 
@@ -46,6 +49,7 @@ function App() {
     setSelectedCharacters(modifiedSelected);
 
     let modifiedCharacters = characters.filter(character => character.id !== characterId);
+    // characters[index].blocked = true;
     setCharacters(modifiedCharacters);
 
     // modifiedSelected.push(characters[index]);
@@ -126,7 +130,6 @@ function App() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }
