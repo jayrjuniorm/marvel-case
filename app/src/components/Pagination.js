@@ -1,26 +1,31 @@
 import React from 'react';
+import ReactPaginate from 'react-paginate';
+import ReactDOM from 'react-dom';
 
 const Pagination = ({ charactersPerPage, totalCharacters, paginate, currentPage }) => {
-    const pageNumbers = [];
-
-    for (let i = 1; i <= Math.ceil(totalCharacters / charactersPerPage); i++) {
-        pageNumbers.push(i);
-    }
+    const pageNumbers = Math.ceil(totalCharacters / charactersPerPage);
 
     return (
-        <nav>
-            <ul className='pagination'>
-                {pageNumbers.map(number => (
-                    <li key={number} className='page-item'>
-                        <a onClick={() => paginate(number)} href='!#' className='page-link'
-                            style={{ backgroundColor: currentPage == number ? "#dee2e6" : "#FFF" }}>
-                            {number}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        </nav>
+        <div id="container">
+            <ReactPaginate
+                breakLabel="..."
+                nextLabel="próxima"
+                onPageChange={paginate}
+                pageRangeDisplayed={3}
+                pageCount={pageNumbers}
+                previousLabel="anterior"
+                renderOnZeroPageCount={null}
+                containerClassName={"pagination justify-content-center"}
+                pageClassName={"page-item"}
+                pageLinkClassName={"page-link"}
+                previousClassName={"page-item"}
+                previousLinkClassName={"page-link"}
+                nextClassName={"page-item"}
+                nextLinkClassName={"page-link"}
+                breakClassName={"page-item"}
+                breakLinkClassName={"page-link"}
+            />
+        </div>
     );
 };
-
 export default Pagination;

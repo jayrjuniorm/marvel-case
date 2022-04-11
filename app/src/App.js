@@ -9,7 +9,7 @@ function App() {
   const [selectedCharacters, setSelectedCharacters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [charactersPerPage] = useState(55);
+  const [charactersPerPage] = useState(10);
   const [totalCharacters, setTotalCharacters] = useState(0);
 
   useEffect(() => {
@@ -17,76 +17,72 @@ function App() {
     setLoading(true)
     fetch(`/characters?currentPage=${currentPage}`,).then(
       response => response.json())
-      .then((data) => [setTotalCharacters(data.data.total), filterSelected(data.data.results)])
+      .then((data) => checkResponse(data))
       .catch((e) => console.log("error", e))
 
-    // setTimeout(() => {
-      setLoading(false);
-    // }, 1000)
+    if (localStorage.hasOwnProperty('selectedCharactersStorage')) {
+      let currentSelectedCharacters = {}
+      currentSelectedCharacters = localStorage.getItem('@app-currentSelectedCharacters');
+      currentSelectedCharacters = JSON.parse(currentSelectedCharacters);
+      if (currentSelectedCharacters !== null) {
+        setSelectedCharacters(currentSelectedCharacters)
+      }
+    }
 
+  }, [currentPage]);
 
+  const checkResponse = response => {
+    if (response && response.code == 200) {
+      setTotalCharacters(response.data.total);
+      filterSelected(response.data.results);
+    }
+    else {
+      alert("Erro ao conectar com o servidor");
+    }
+  };
 
-  }, [currentPage, selectedCharacters]);
+  const filterSelected = (newCharacters, characterId) => {
+    for (let i = 0; i < newCharacters.length; i++) {
+      let found = selectedCharacters.findIndex(x => x.id === newCharacters[i].id);
+      if (found !== -1) {
+        newCharacters[i].blocked = true;
+      }
+      else if (characterId) {
+        let characterRemoved = newCharacters.find(x => x.id === characterId);
+        if (characterRemoved) characterRemoved.blocked = false;
+      }
+      else {
+        newCharacters[i].blocked = false;
+      }
+    }
 
+    setCharacters(newCharacters)
+    setLoading(false);
+  }
 
-
-  // const indexOfLastPost = currentPage * charactersPerPage;
-  // const indexOfFirstPost = indexOfLastPost - charactersPerPage;
-  // const currentCharacters = characters.slice(indexOfFirstPost, indexOfLastPost);
 
 
   const paginate = pageNumber => {
     window.scrollTo(0, 0)
-    setCurrentPage(pageNumber);
+    setCurrentPage(pageNumber.selected + 1);
   }
 
   const addToSelectedCharacters = characterId => {
-
-    //pegar o elemento do array geral
     let index = characters.findIndex(x => x.id === characterId);
-    // copiar o objeto para o array dos selecionados
+    if (characters[index].blocked) return;
     let modifiedSelected = [...selectedCharacters, characters[index]];
     setSelectedCharacters(modifiedSelected);
-
-    let modifiedCharacters = characters.filter(character => character.id !== characterId);
-    // characters[index].blocked = true;
-    setCharacters(modifiedCharacters);
-
-    // modifiedSelected.push(characters[index]);
-
-    // console.log("modifiedSelected", modifiedSelected.length)
-    // console.log("characters", characters)
-    // const modifiedCharacters = characters.splice(index, 1);
-    // console.log("modifiedCharacters", modifiedCharacters)
-    // 
-    // console.log("selectedCharacters", selectedCharacters)
-    // const oldCharacters = characters;
+    localStorage.setItem('@app-currentSelectedCharacters', JSON.stringify(modifiedSelected));
+    characters[index].blocked = true;
+    setCharacters(characters);
   };
 
   const removeFromSelectedCharacters = characterId => {
-    let index = selectedCharacters.findIndex(x => x.id === characterId);
-
+    filterSelected(characters, characterId);
     let modifiedSelectedCharacters = selectedCharacters.filter(character => character.id !== characterId);
-    // selectedCharacters.splice(index, 1);
     setSelectedCharacters(modifiedSelectedCharacters);
+    localStorage.setItem('@app-currentSelectedCharacters', JSON.stringify(modifiedSelectedCharacters))
   };
-
-  const filterSelected = newCharacters => {
-    for (let i = 0; i < newCharacters.length; i++) {
-      let found = selectedCharacters.findIndex(x => x.id === newCharacters[i].id);
-      if (found !== -1) {
-        newCharacters.splice(i, 1);
-        console.log("dound", newCharacters)
-        // newCharacters.filter(character => character.id === selectedCharacters[found].id);
-        i--;
-      }
-    }
-    // let modifiedCharacters = characters.filter(character => character.id !== characterId);
-    // setCharacters(modifiedCharacters);
-
-    // console.log("newCharacters", newCharacters)
-    setCharacters(newCharacters)
-  }
 
 
   return (
@@ -117,7 +113,7 @@ function App() {
                       {characterSelected.name}
                     </div>
 
-        
+
                     <div onClick={() => removeFromSelectedCharacters(characterSelected.id)} className="col-1 page-link"
                       style={{ color: "white", background: "red", borderRadius: "5px", cursor: "pointer" }}>-</div>
 
